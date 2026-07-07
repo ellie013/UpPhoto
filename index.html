@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Drive 相片快速上傳系統</title>
+    <!-- 引入 Google Fonts Outfit 與 Noto Sans TC -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome 圖示 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- 連結外部 CSS 樣式表 -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- 背景發光特效 -->
+    <div class="bg-glow bg-glow-1"></div>
+    <div class="bg-glow bg-glow-2"></div>
+
+    <div class="app-container">
+        <!-- 頁首與設定按鈕 -->
+        <header class="app-header">
+            <div class="header-logo">
+                <i class="fa-solid fa-cloud-arrow-up logo-icon"></i>
+                <div class="logo-text">
+                    <h1>DrivePhoto</h1>
+                    <span>相片快速上傳系統</span>
+                </div>
+            </div>
+            <div class="header-actions">
+                <!-- 管理者請前往 admin.html 進行設定與配置 -->
+            </div>
+        </header>
+
+        <!-- 設定未完成警告 -->
+        <div id="setupWarning" class="alert alert-warning hidden">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <div class="alert-content">
+                <strong>系統尚未完成設定！</strong> 請聯絡系統管理員進行配置。
+            </div>
+        </div>
+
+        <main class="app-main">
+            <!-- 左側/上方：上傳設定與拖曳區 -->
+            <section class="main-content">
+                <!-- 步驟 1：基本資訊選取 -->
+                <div class="glass-card info-card">
+                    <div class="card-header">
+                        <span class="step-badge">1</span>
+                        <h2>選擇日期與課程</h2>
+                    </div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="dateInput"><i class="fa-regular fa-calendar-days"></i> 選擇日期</label>
+                            <input type="date" id="dateInput">
+                            <span id="minguoDateDisplay" class="date-preview-badge">民國日期：載入中...</span>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="courseSelect"><i class="fa-solid fa-graduation-cap"></i> 選擇課程</label>
+                            <select id="courseSelect">
+                                <option value="寶藏寺探險">寶藏寺探險</option>
+                                <option value="戶外教學活動">戶外教學活動</option>
+                                <option value="科學實驗大挑戰">科學實驗大挑戰</option>
+                                <option value="程式設計體驗">程式設計體驗</option>
+                                <option value="手作DIY美勞">手作DIY美勞</option>
+                                <option value="CUSTOM_COURSE">[其他] 自訂課程名稱</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- 自訂課程輸入框 (預設隱藏) -->
+                    <div id="customCourseGroup" class="form-group hidden margin-top-15">
+                        <label for="customCourseInput"><i class="fa-solid fa-pen-nib"></i> 請輸入自訂課程名稱</label>
+                        <input type="text" id="customCourseInput" placeholder="例如：桌遊益智王、英語歌唱比賽...">
+                    </div>
+
+                    <!-- 資料夾名稱即時預覽 -->
+                    <div class="folder-preview-box">
+                        <div class="preview-label">雲端資料夾命名預覽：</div>
+                        <div id="folderNamePreview" class="preview-value">115.07.07 寶藏寺探險</div>
+                    </div>
+                </div>
+
+                <!-- 步驟 2：相片拖曳上傳區 -->
+                <div class="glass-card upload-card">
+                    <div class="card-header">
+                        <span class="step-badge">2</span>
+                        <h2>加入相片</h2>
+                    </div>
+                    
+                    <div id="dropzone" class="upload-dropzone">
+                        <input type="file" id="fileInput" multiple accept="image/*" class="hidden-file-input">
+                        <div class="dropzone-content">
+                            <div class="dropzone-icon-wrapper">
+                                <i class="fa-regular fa-images drop-icon"></i>
+                                <i class="fa-solid fa-plus plus-icon"></i>
+                            </div>
+                            <h3>將相片拖曳至此處</h3>
+                            <p>或是 <span>瀏覽本機檔案</span></p>
+                            <span class="file-limits">支援 PNG, JPG, JPEG 等圖片格式，單張建議不超過 15MB</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 右側/下方：上傳佇列與進度監控 -->
+            <section class="side-content">
+                <div class="glass-card queue-card">
+                    <div class="card-header">
+                        <h2><i class="fa-solid fa-list-ul"></i> 待上傳佇列</h2>
+                        <span id="queueCountBadge" class="badge">0 張</span>
+                    </div>
+
+                    <!-- 佇列清單 -->
+                    <div id="queueList" class="queue-list-container empty">
+                        <!-- 空白狀態提示 -->
+                        <div class="empty-state">
+                            <i class="fa-regular fa-image"></i>
+                            <p>目前尚未選取任何相片</p>
+                            <span>請先從左側選擇日期與課程，然後加入相片！</span>
+                        </div>
+                    </div>
+
+                    <!-- 整體進度與上傳按鈕 -->
+                    <div id="uploadActionsContainer" class="queue-actions-footer hidden">
+                        <!-- 整體進度條 -->
+                        <div class="overall-progress-container">
+                            <div class="progress-details">
+                                <span id="overallProgressText">準備上傳 0 / 0 張...</span>
+                                <span id="overallPercentText">0%</span>
+                            </div>
+                            <div class="progress-bar-bg">
+                                <div id="overallProgressBar" class="progress-bar-fill" style="width: 0%"></div>
+                            </div>
+                        </div>
+
+                        <!-- 控制按鈕 -->
+                        <div class="action-buttons-group">
+                            <button id="clearQueueBtn" class="btn btn-danger">
+                                <i class="fa-regular fa-trash-can"></i> 清除佇列
+                            </button>
+                            <button id="startUploadBtn" class="btn btn-primary">
+                                <i class="fa-solid fa-cloud-arrow-up"></i> 開始上傳照片
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+
+
+        <!-- 成功上傳提示 Modal -->
+        <div id="successModal" class="modal-overlay hidden">
+            <div class="modal-card glass-card text-center success-modal">
+                <div class="success-icon-animation">
+                    <div class="success-circle"></div>
+                    <i class="fa-solid fa-check checkmark"></i>
+                </div>
+                <h2>相片上傳完成！</h2>
+                <p id="successModalMessage">成功將 0 張照片上傳至雲端硬碟</p>
+                <div id="targetFolderLinkContainer" class="margin-top-20">
+                    <a id="targetFolderLink" href="#" target="_blank" class="btn btn-primary">
+                        <i class="fa-solid fa-arrow-up-right-from-square"></i> 前往 Google 雲端資料夾
+                    </a>
+                </div>
+                <div class="margin-top-15">
+                    <button id="successCloseBtn" class="btn btn-outline">關閉</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 連結外部 JS 檔案 -->
+    <script src="config.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
