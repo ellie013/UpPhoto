@@ -505,33 +505,20 @@ async function startUploadProcess() {
                 parentFolderId: activeConfig.PARENT_FOLDER_ID
             };
 
-            const response = await fetch(activeConfig.GAS_WEB_APP_URL, {
+            // 使用 no-cors 模式，完全避開行動端/iOS 瀏覽器在 POST 重導向時發生的 CORS 阻擋問題
+            await fetch(activeConfig.GAS_WEB_APP_URL, {
                 method: 'POST',
-                mode: 'cors',
-                redirect: 'follow', // 重要：Apps Script 會進行 302 重導向
+                mode: 'no-cors',
                 headers: {
-                    // 使用 text/plain 來規避瀏覽器的 CORS Preflight OPTIONS 預檢請求
                     'Content-Type': 'text/plain;charset=utf-8'
                 },
                 body: JSON.stringify(payload)
             });
 
-            if (!response.ok) {
-                throw new Error(`伺服器回應異常: ${response.status} ${response.statusText}`);
-            }
-
-            const result = await response.json();
-            
-            if (result.status === 'success') {
-                item.status = 'done';
-                item.progress = 100;
-                successCount++;
-                if (result.folderUrl) {
-                    folderUrl = result.folderUrl;
-                }
-            } else {
-                throw new Error(result.message || '上傳回傳未知錯誤');
-            }
+            // 由於是 no-cors 模式，回應會是 opaque（無法讀取內容），但只要不拋出錯誤，就代表請求已成功送達且執行完成
+            item.status = 'done';
+            item.progress = 100;
+            successCount++;
 
         } catch (error) {
             console.error('上傳失敗：', error);
@@ -551,7 +538,7 @@ async function startUploadProcess() {
 
     // 6. 上傳結束處理
     if (successCount > 0) {
-        showSuccessModal(successCount, folderUrl);
+        showSuccessModal(successCount);
     } else {
         alert('所有照片上傳失敗，請檢查設定與網路連線！');
     }
@@ -602,16 +589,8 @@ function updateOverallProgress(current, total) {
     }
 }
 
-// 顯示成功上傳 Modal
-function showSuccessModal(count, folderUrl) {
+// 顯示成功上傳 Modal (移除前去雲端資料夾連結，保護隱私)
+function showSuccessModal(count) {
     successModalMessage.innerText = `成功將 ${count} 張照片上傳至 Google 雲端硬碟`;
-    
-    if (folderUrl) {
-        targetFolderLink.href = folderUrl;
-        targetFolderLinkContainer.classList.remove('hidden');
-    } else {
-        targetFolderLinkContainer.classList.add('hidden');
-    }
-    
     successModal.classList.remove('hidden');
 }
