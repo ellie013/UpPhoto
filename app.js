@@ -174,7 +174,16 @@ function bindEvents() {
     customCourseInput.addEventListener('input', updateFolderPreview);
 
     // 拖曳區事件
-    dropzone.addEventListener('click', () => fileInput.click());
+    dropzone.addEventListener('click', (e) => {
+        // 只有在非直接點擊 input 時，才觸發 input.click()，避免 event bubbling 造成無限觸發或 iOS 閃退
+        if (e.target !== fileInput) {
+            fileInput.click();
+        }
+    });
+    fileInput.addEventListener('click', (e) => {
+        // 阻止點擊事件向上冒泡至 dropzone
+        e.stopPropagation();
+    });
     fileInput.addEventListener('change', handleFileSelect);
     
     ['dragenter', 'dragover'].forEach(eventName => {
@@ -285,9 +294,12 @@ function handleFiles(files) {
 
     let addedCount = 0;
     Array.from(files).forEach(file => {
-        // 只接受圖片
-        if (!file.type.startsWith('image/')) {
-            alert(`檔案「${file.name}」不是圖片，已自動忽略。`);
+        // 行動裝置相容性：檢查 MIME 類型是否為圖片，或副檔名是否為常見圖片格式（解決 HEIC 等格式在部分瀏覽器 mime-type 為空或 application/octet-stream 的問題）
+        const isImage = file.type.startsWith('image/') || 
+                        /\.(jpg|jpeg|png|gif|webp|heic|heif)$/i.test(file.name);
+        
+        if (!isImage) {
+            alert(`檔案「${file.name}」不像是圖片格式，已自動忽略。`);
             return;
         }
 
@@ -301,13 +313,25 @@ function handleFiles(files) {
         // 產生一個唯一 ID
         const id = 'img_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
         
+        // 行動裝置 WebView 相容性：URL.createObjectURL(file) 在某些 LINE 內建瀏覽器或 WebView 中可能拋出異常，需要 try-catch 防護
+        let objectUrl = "";
+        try {
+            // 只有當能建立 URL 時才建立，釋放時也比較安全
+            if (file) {
+                objectUrl = URL.createObjectURL(file);
+            }
+        } catch (err) {
+            console.warn("無法為此圖片建立 Object URL 縮圖:", err);
+            objectUrl = ""; // 設為空字串，後面會使用預設 SVG 圖片佔位
+        }
+
         uploadQueue.push({
             id: id,
             file: file,
             status: 'waiting', // waiting, uploading, done, failed
             progress: 0,
             errorMsg: '',
-            objectUrl: URL.createObjectURL(file) // 快速縮圖預覽
+            objectUrl: objectUrl
         });
         addedCount++;
     });
@@ -360,9 +384,10 @@ function renderQueue() {
         }
 
         const sizeFormatted = formatFileSize(item.file.size);
+        const imgSrc = item.objectUrl || 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="%239f9bb4"><path d="M448 80c8.8 0 16 7.2 16 16V351.3l-88.6-88.6c-15-15-39.3-15-54.3 0L242.7 341.3 149.4 248c-15-15-39.3-15-54.3 0L32 310.6V96c0-8.8 7.2-16 16-16H448zM48 0C21.5 0 0 21.5 0 48V464c0 26.5 21.5 48 48 48H464c26.5 0 48-21.5 48-48V48c0-26.5-21.5-48-48-48H48zM144 144a32 32 0 1 1 64 0 32 32 0 1 1 -64 0z"/></svg>';
         
         itemEl.innerHTML = `
-            <img src="${item.objectUrl}" class="queue-item-thumb" alt="${item.file.name}">
+            <img src="${imgSrc}" class="queue-item-thumb" alt="${item.file.name}">
             <div class="queue-item-info">
                 <div class="queue-item-name" title="${item.file.name}">${item.file.name}</div>
                 <div class="queue-item-meta">
