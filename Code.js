@@ -14,7 +14,7 @@
 
 // [設定] 請將此處替換為您的 Google 雲端硬碟資料夾 ID
 // 例如資料夾網址為 https://drive.google.com/drive/folders/1abc123XYZ... 則 ID 為 "1abc123XYZ..."
-var PARENT_FOLDER_ID = "YOUR_GOOGLE_DRIVE_FOLDER_ID_HERE";
+var PARENT_FOLDER_ID = "1n8rvdutEJQTENwieYUgjjJEU6rDQ44_u";
 
 /**
  * 處理 GET 請求
