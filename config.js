@@ -9,7 +9,7 @@ const CONFIG = {
     GAS_WEB_APP_URL: "https://script.google.com/macros/s/AKfycbyDMJXhK02v3FYLVaU9By3T9h8fHxrCIK4poVyQTRK-1nYF-e-bGAIEfxxqzArbpY2U/exec",
     
     // 2. 主要儲存的雲端硬碟資料夾 ID (選填)
-    PARENT_FOLDER_ID: "1B4tPDTClyxtE615U7FT_twaRYILZFPcl",
+    PARENT_FOLDER_ID: "1n8rvdutEJQTENwieYUgjjJEU6rDQ44_u",
     
     // 3. 預設顯示的課程清單
     DEFAULT_COURSES: [
