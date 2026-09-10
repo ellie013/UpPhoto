@@ -40,8 +40,6 @@ const setupWarning = document.getElementById('setupWarning');
 // 成功 Modal DOM
 const successModal = document.getElementById('successModal');
 const successModalMessage = document.getElementById('successModalMessage');
-const targetFolderLink = document.getElementById('targetFolderLink');
-const targetFolderLinkContainer = document.getElementById('targetFolderLinkContainer');
 const successCloseBtn = document.getElementById('successCloseBtn');
 
 /* ==========================================
@@ -294,19 +292,19 @@ function handleFiles(files) {
 
     let addedCount = 0;
     Array.from(files).forEach(file => {
-        // 行動裝置相容性：檢查 MIME 類型是否為圖片，或副檔名是否為常見圖片格式（解決 HEIC 等格式在部分瀏覽器 mime-type 為空或 application/octet-stream 的問題）
-        const isImage = file.type.startsWith('image/') || 
-                        /\.(jpg|jpeg|png|gif|webp|heic|heif)$/i.test(file.name);
+        // 行動裝置相容性：檢查 MIME 類型是否為圖片或影片，或副檔名是否為常見影音格式
+        const isMedia = file.type.startsWith('image/') || file.type.startsWith('video/') ||
+                        /\.(jpg|jpeg|png|gif|webp|heic|heif|mp4|mov|avi|wmv|flv|mkv|webm)$/i.test(file.name);
         
-        if (!isImage) {
-            alert(`檔案「${file.name}」不像是圖片格式，已自動忽略。`);
+        if (!isMedia) {
+            alert(`檔案「${file.name}」不像是圖片或影片格式，已自動忽略。`);
             return;
         }
 
-        // 大小限制 (建議 25MB)
+        // 大小限制 (上傳至 GAS 有 Request Payload 50MB 的限制，Base64 膨脹約 33%，故建議單檔不超過 35MB)
         const sizeInMB = file.size / (1024 * 1024);
-        if (sizeInMB > 25) {
-            alert(`檔案「${file.name}」大小超過 25MB (目前 ${sizeInMB.toFixed(1)}MB)，可能導致上傳失敗，已自動忽略。`);
+        if (sizeInMB > 35) {
+            alert(`檔案「${file.name}」大小超過 35MB (目前 ${sizeInMB.toFixed(1)}MB)，可能導致上傳失敗，已自動忽略。`);
             return;
         }
 
@@ -343,14 +341,14 @@ function handleFiles(files) {
 
 // 渲染佇列清單
 function renderQueue() {
-    queueCountBadge.innerText = `${uploadQueue.length} 張`;
+    queueCountBadge.innerText = `${uploadQueue.length} 個`;
 
     if (uploadQueue.length === 0) {
         queueList.innerHTML = `
             <div class="empty-state">
-                <i class="fa-regular fa-image"></i>
-                <p>目前尚未選取任何相片</p>
-                <span>請先從左側選擇日期與課程，然後加入相片！</span>
+                <i class="fa-regular fa-folder-open"></i>
+                <p>目前尚未選取任何檔案</p>
+                <span>請先從左側選擇日期與課程，然後加入檔案！</span>
             </div>
         `;
         queueList.classList.add('empty');
@@ -384,7 +382,17 @@ function renderQueue() {
         }
 
         const sizeFormatted = formatFileSize(item.file.size);
-        const imgSrc = item.objectUrl || 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="%239f9bb4"><path d="M448 80c8.8 0 16 7.2 16 16V351.3l-88.6-88.6c-15-15-39.3-15-54.3 0L242.7 341.3 149.4 248c-15-15-39.3-15-54.3 0L32 310.6V96c0-8.8 7.2-16 16-16H448zM48 0C21.5 0 0 21.5 0 48V464c0 26.5 21.5 48 48 48H464c26.5 0 48-21.5 48-48V48c0-26.5-21.5-48-48-48H48zM144 144a32 32 0 1 1 64 0 32 32 0 1 1 -64 0z"/></svg>';
+        
+        let imgSrc;
+        const isVideo = item.file.type.startsWith('video/') || /\.(mp4|mov|avi|wmv|flv|mkv|webm)$/i.test(item.file.name);
+        
+        if (isVideo) {
+            // 影片提供預設的影片圖示作為縮圖
+            imgSrc = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="%239f9bb4"><path d="M0 96C0 60.7 28.7 32 64 32H448c35.3 0 64 28.7 64 64V416c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V96zM48 236v40c0 6.6 5.4 12 12 12h40c6.6 0 12-5.4 12-12v-40c0-6.6-5.4-12-12-12H60c-6.6 0-12 5.4-12 12zm12-76h40c6.6 0 12-5.4 12-12v-40c0-6.6-5.4-12-12-12H60c-6.6 0-12 5.4-12 12v40c0 6.6 5.4 12 12 12zm0 192h40c6.6 0 12-5.4 12-12v-40c0-6.6-5.4-12-12-12H60c-6.6 0-12 5.4-12 12v40c0 6.6 5.4 12 12 12zm340-192h40c6.6 0 12-5.4 12-12v-40c0-6.6-5.4-12-12-12h-40c-6.6 0-12 5.4-12 12v40c0 6.6 5.4 12 12 12zm0 116h40c6.6 0 12-5.4 12-12v-40c0-6.6-5.4-12-12-12h-40c-6.6 0-12 5.4-12 12v40c0 6.6 5.4 12 12 12zm0 116h40c6.6 0 12-5.4 12-12v-40c0-6.6-5.4-12-12-12h-40c-6.6 0-12 5.4-12 12v40c0 6.6 5.4 12 12 12zM160 128v256c0 17.7 14.3 32 32 32h128c17.7 0 32-14.3 32-32V128c0-17.7-14.3-32-32-32H192c-17.7 0-32 14.3-32 32z"/></svg>';
+        } else {
+            // 圖片則嘗試使用 ObjectURL，若無則降級為預設圖片圖示
+            imgSrc = item.objectUrl || 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="%239f9bb4"><path d="M448 80c8.8 0 16 7.2 16 16V351.3l-88.6-88.6c-15-15-39.3-15-54.3 0L242.7 341.3 149.4 248c-15-15-39.3-15-54.3 0L32 310.6V96c0-8.8 7.2-16 16-16H448zM48 0C21.5 0 0 21.5 0 48V464c0 26.5 21.5 48 48 48H464c26.5 0 48-21.5 48-48V48c0-26.5-21.5-48-48-48H48zM144 144a32 32 0 1 1 64 0 32 32 0 1 1 -64 0z"/></svg>';
+        }
         
         itemEl.innerHTML = `
             <img src="${imgSrc}" class="queue-item-thumb" alt="${item.file.name}">

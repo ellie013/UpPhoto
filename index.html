@@ -91,15 +91,15 @@
                     </div>
                     
                     <div id="dropzone" class="upload-dropzone">
-                        <input type="file" id="fileInput" multiple accept="image/*" class="hidden-file-input">
+                        <input type="file" id="fileInput" multiple accept="image/*,video/*" class="hidden-file-input">
                         <div class="dropzone-content">
                             <div class="dropzone-icon-wrapper">
                                 <i class="fa-regular fa-images drop-icon"></i>
                                 <i class="fa-solid fa-plus plus-icon"></i>
                             </div>
-                            <h3>將相片拖曳至此處</h3>
+                            <h3>將相片或影片拖曳至此處</h3>
                             <p>或是 <span>瀏覽本機檔案</span></p>
-                            <span class="file-limits">支援 PNG, JPG, JPEG 等圖片格式，單張建議不超過 15MB</span>
+                            <span class="file-limits">支援格式: JPG, PNG, HEIC, MP4, MOV 等，單檔建議不超過 35MB</span>
                         </div>
                     </div>
                 </div>
@@ -118,8 +118,8 @@
                         <!-- 空白狀態提示 -->
                         <div class="empty-state">
                             <i class="fa-regular fa-image"></i>
-                            <p>目前尚未選取任何相片</p>
-                            <span>請先從左側選擇日期與課程，然後加入相片！</span>
+                            <p>目前尚未選取任何檔案</p>
+                            <span>請先從左側選擇日期與課程，然後加入相片或影片！</span>
                         </div>
                     </div>
 
@@ -128,7 +128,7 @@
                         <!-- 整體進度條 -->
                         <div class="overall-progress-container">
                             <div class="progress-details">
-                                <span id="overallProgressText">準備上傳 0 / 0 張...</span>
+                                <span id="overallProgressText">準備上傳 0 / 0 個...</span>
                                 <span id="overallPercentText">0%</span>
                             </div>
                             <div class="progress-bar-bg">
@@ -142,7 +142,7 @@
                                 <i class="fa-regular fa-trash-can"></i> 清除佇列
                             </button>
                             <button id="startUploadBtn" class="btn btn-primary">
-                                <i class="fa-solid fa-cloud-arrow-up"></i> 開始上傳照片
+                                <i class="fa-solid fa-cloud-arrow-up"></i> 開始上傳檔案
                             </button>
                         </div>
                     </div>
@@ -159,8 +159,8 @@
                     <div class="success-circle"></div>
                     <i class="fa-solid fa-check checkmark"></i>
                 </div>
-                <h2>相片上傳完成！</h2>
-                <p id="successModalMessage">成功將 0 張照片上傳至雲端硬碟</p>
+                <h2>檔案上傳完成！</h2>
+                <p id="successModalMessage">成功將 0 個檔案上傳至雲端硬碟</p>
                 <div class="margin-top-15">
                     <button id="successCloseBtn" class="btn btn-outline">關閉</button>
                 </div>
